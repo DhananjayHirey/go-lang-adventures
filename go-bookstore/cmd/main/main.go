@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"go-bookstore/pkg/config"
 	"go-bookstore/pkg/controllers"
 	"go-bookstore/pkg/repositories"
@@ -11,10 +12,11 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-
+	godotenv.Load()
 	ctx := context.Background()
 
 	// db pool connection
@@ -33,5 +35,6 @@ func main() {
 	r := mux.NewRouter()
 	routes.RegisterBookStoreRoutes(r, bookController)
 	http.Handle("/", r)
-	log.Fatal(http.ListenAndServe("localhost:8000", r))
+	fmt.Println("Starting the server on port 8000")
+	log.Fatal(http.ListenAndServe(":8000", r))
 }
