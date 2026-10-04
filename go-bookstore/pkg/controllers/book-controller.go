@@ -25,7 +25,7 @@ func NewBookController(
 
 func (c *BookController) GetBookById(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	bookId, err := strconv.Atoi(params["id"])
+	bookId, err := strconv.Atoi(params["bookId"])
 	bookId64 := int64(bookId)
 	if err != nil {
 		fmt.Errorf("Failed to convert bookId %w", err)
@@ -64,4 +64,33 @@ func (c *BookController) CreateBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(createdBook)
+}
+
+func (c *BookController) UpdateBook(w http.ResponseWriter, r *http.Request) {
+	var bookUpdates models.Book
+	_ = json.NewDecoder(r.Body).Decode(&bookUpdates)
+	updatedBook, err := c.bookRepository.UpdateBook(r.Context(), bookUpdates.ID, bookUpdates)
+	if err != nil {
+		http.Error(w, "failed to update Books", http.StatusInternalServerError)
+		return
+	}
+	json.NewEncoder(w).Encode(updatedBook)
+}
+
+func (c *BookController) DeleteBook(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	bookId, err := strconv.Atoi(params["bookId"])
+	bookId64 := int64(bookId)
+	if err != nil {
+		fmt.Errorf("Failed to convert bookId %w", err)
+		return
+	}
+
+	err2 := c.bookRepository.DeleteBook(r.Context(), bookId64)
+
+	if err2 != nil {
+		http.Error(w, "failed to delete book", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

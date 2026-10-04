@@ -26,12 +26,13 @@ func (r *BookRepository) GetBookById(
 	err := r.db.QueryRow(
 		ctx,
 		`
-		SELECT name, author, publication
+		SELECT id, name, author, publication
 		FROM books
 		WHERE id = $1 
 		`,
 		id,
 	).Scan(
+		&book.ID,
 		&book.Name,
 		&book.Author,
 		&book.Publication,
@@ -57,6 +58,7 @@ func (r *BookRepository) GetBook(ctx context.Context) (*[]models.Book, error) {
 	for rows.Next() {
 		var book models.Book
 		err := rows.Scan(
+			&book.ID,
 			&book.Name,
 			&book.Author,
 			&book.Publication,
@@ -82,12 +84,13 @@ func (r *BookRepository) CreateBook(ctx context.Context, newBook models.Book) (*
 		`
         INSERT INTO books (name, author, publication)
         VALUES ($1, $2, $3)
-        RETURNING name, author, publication
+        RETURNING id, name, author, publication
         `,
 		newBook.Name,
 		newBook.Author,
 		newBook.Publication,
 	).Scan(
+		&book.ID,
 		&book.Name,
 		&book.Author,
 		&book.Publication,
@@ -98,4 +101,42 @@ func (r *BookRepository) CreateBook(ctx context.Context, newBook models.Book) (*
 	}
 	return &book, nil
 
+}
+
+func (r *BookRepository) UpdateBook(ctx context.Context, id int64, book models.Book) (*models.Book, error) {
+	var updatedBook models.Book
+	err := r.db.QueryRow(
+		ctx,
+		`
+		UPDATE books
+		SET name = $1, author = $2, publication = $3
+		WHERE id = $4
+		RETURNING name, author, publication
+		`,
+		book.Name,
+		book.Author,
+		book.Publication,
+		id,
+	).Scan(
+		&updatedBook.Name,
+		&updatedBook.Author,
+		&updatedBook.Publication,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	return &book, nil
+}
+
+func (r *BookRepository) DeleteBook(ctx context.Context, id int64) error {
+	_, err := r.db.Exec(
+		ctx,
+		`
+		DELETE FROM books
+		WHERE id = $1
+		`,
+		id,
+	)
+	return err
 }
