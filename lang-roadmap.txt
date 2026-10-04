@@ -1,0 +1,20 @@
+Variables, data types, constants
+Functions
+Pointers
+Arrays, slices, and maps
+Structs
+Interfaces
+Packages and modules
+Error handling
+Goroutines
+Channels
+Context
+HTTP servers
+JSON
+REST APIs
+Database access (database/sql)
+Testing
+Concurrency patterns
+gRPC
+Docker
+Build a production-ready backend
